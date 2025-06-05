@@ -1,13 +1,6 @@
 // Contract addresses
 export const CONTRACT_ADDRESSES = {
-  paymaster: "0x5a6680dFd4a77FEea0A7be291147768EaA2414ad",
-  entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
-  accountFactory: "0x9406Cc6185a346906296840746125a0E44976454",
-  multiCall: "0x343A0DdD8e58bEaf29d69936c82F1516C6677B0E",
-  // This would be your deployed NFT contract address
-  nftContract: "0x63f1f7c6a24294a874d7c8ea289e4624f84b48cb",
-  dpollsContract: "0xe62a079dcFBdA44Dea9B8eDB6CD31293fCf84514",
-  testTokenContract: "0xA919e465871871F2D1da94BccAF3acaF9609D968" // TestToken contract address
+  erc20ToSpl: "0xF6b17787154C418d5773Ea22Afc87A95CAA3e957",
 };
 
 // ERC20 Token Addresses (for testing)

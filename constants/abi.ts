@@ -15,40 +15,15 @@ export const ERC20_ABI = [
 ]
 
 export const ERC20_TO_SPL_ABI = [
-  // Poll Creation and Management
-  'function createPoll(tuple(address creator, string subject, string description, string category, string viewType, string[] options, uint256 rewardPerResponse, uint256 durationDays, uint256 maxResponses, uint256 minContribution, string fundingType, bool isOpenImmediately, uint256 targetFund, address rewardToken, string rewardDistribution) params) external payable',
-  'function createUnfundedPoll(tuple(string subject, string description, string category, string viewType, string[] options, uint256 durationDays, bool isOpenImmediately) params) external',
-  'function submitResponse(uint256 pollId, string response) external payable',
-  'function closePoll(uint256 pollId) external payable',
-  'function cancelPoll(uint256 pollId) external payable',
-  'function openPoll(uint256 pollId) external payable',
-  'function forClaiming(uint256 pollId) external payable',
-  'function forFunding(uint256 pollId) external payable',
-  'function updateTargetFund(uint256 pollId, uint256 newTargetFund) external payable',
-  'function fundPoll(uint256 pollId) external payable',
-  'function fundPollWithToken(uint256 pollId, uint256 amount) external',
-  'function claimReward(uint256 pollId, address claimer) external payable',
-  
-  // Token Management
-  'function whitelistToken(address token) external',
-  'function removeToken(address token) external',
-  'function setNativeToken(address token) external',
-  
-  // View Functions
-  'function getOptions(uint256 pollId) view returns (string[])',
-  'function getPollStatus(uint256 pollId) view returns (bool, uint256, uint256)',
-  'function getAllPollIds() view returns (uint256[])',
-  'function getPoll(uint256 pollId) view returns (tuple(address creator, string subject, string description, string category, string status, string viewType, string[] options, uint256 rewardPerResponse, uint256 maxResponses, uint256 durationDays, uint256 minContribution, string fundingType, uint256 targetFund, uint256 endTime, bool isOpen, uint256 totalResponses, uint256 funds, address rewardToken, string rewardDistribution))',
-  'function getPollResponses(uint256 pollId) view returns (tuple(address responder, string response, uint256 weight, uint256 timestamp, bool isClaimed, uint256 reward)[])',
-  'function getUserPolls(address user) view returns (tuple(address creator, string subject, string description, string category, string status, string viewType, string[] options, uint256 rewardPerResponse, uint256 maxResponses, uint256 durationDays, uint256 minContribution, string fundingType, uint256 targetFund, uint256 endTime, bool isOpen, uint256 totalResponses, uint256 funds, address rewardToken, string rewardDistribution)[])',
-  'function getUserActivePolls(address user) view returns (tuple(address creator, string subject, string description, string category, string status, string viewType, string[] options, uint256 rewardPerResponse, uint256 maxResponses, uint256 durationDays, uint256 minContribution, string fundingType, uint256 targetFund, uint256 endTime, bool isOpen, uint256 totalResponses, uint256 funds, address rewardToken, string rewardDistribution)[])',
-  'function getActivePolls() view returns (tuple(address creator, string subject, string description, string category, string status, string viewType, string[] options, uint256 rewardPerResponse, uint256 maxResponses, uint256 durationDays, uint256 minContribution, string fundingType, uint256 targetFund, uint256 endTime, bool isOpen, uint256 totalResponses, uint256 funds, address rewardToken, string rewardDistribution)[])',
-  
+  // Factory Functions
+  'function getErc20ForSpl(bytes32 mint) view returns (address)',
+  'function allErc20ForSpl(uint256) view returns (address)',
+  'function allErc20ForSplLength() view returns (uint256)',
+  'function createErc20ForSpl(bytes32 mint) returns (address)',
+  'function createErc20ForSplMintable(string name, string symbol, uint8 decimals, address mint_authority) returns (address)',
+
   // Events
-  'event PollCreated(uint256 pollId, address creator, string subject)',
-  'event PollUpdated(uint256 pollId, address creator, string sub)',
-  'event PollClosed(uint256 pollId)',
-  'event TargetFundUpdated(uint256 pollId, uint256 oldTarget, uint256 newTarget)'
+  'event ERC20ForSplCreated(bytes32 mint, address pair, uint256)'
 ]
 
 export const ERC721_ABI = [

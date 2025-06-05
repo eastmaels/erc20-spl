@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import { Rocket, ArrowRight, CheckCircle, AlertCircle } from "lucide-react"
 import { ethers } from "ethers"
 import { ERC20_TO_SPL_ABI } from "@/constants/abi"
+import { CONTRACT_ADDRESSES } from "@/constants/contracts"
 
 interface TokenLauncherProps {
   walletAddress: string
@@ -66,8 +67,8 @@ export function TokenLauncher({ walletAddress }: TokenLauncherProps) {
       setLaunchProgress(50)
 
       // Replace with your actual factory contract address
-      const factoryAddress = "YOUR_FACTORY_CONTRACT_ADDRESS"
-      const factory = new ethers.Contract(factoryAddress, ERC20_TO_SPL_ABI, signer)
+      const factory = new ethers.Contract(CONTRACT_ADDRESSES.erc20ToSpl, ERC20_TO_SPL_ABI, signer)
+      console.log('tokenData', tokenData)
 
       const tx = await factory.createErc20ForSplMintable(
         tokenData.name,
