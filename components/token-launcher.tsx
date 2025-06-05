@@ -42,6 +42,7 @@ export function TokenLauncher({ walletAddress, isCorrectNetwork }: TokenLauncher
   const [launchProgress, setLaunchProgress] = useState(0)
   const [launchStep, setLaunchStep] = useState("")
   const [txHash, setTxHash] = useState("")
+  const [countdown, setCountdown] = useState(5)
 
   const handleInputChange = (field: keyof TokenData, value: string | boolean) => {
     setTokenData((prev) => ({ ...prev, [field]: value }))
@@ -93,15 +94,23 @@ export function TokenLauncher({ walletAddress, isCorrectNetwork }: TokenLauncher
       setLaunchStep("Token launched successfully!")
       setLaunchProgress(100)
       setTxHash(receipt.hash)
+      
+      // Start countdown
+      let timeLeft = 5
+      const timer = setInterval(() => {
+        timeLeft -= 1
+        setCountdown(timeLeft)
+        if (timeLeft <= 0) {
+          clearInterval(timer)
+          setIsLaunching(false)
+          setLaunchProgress(0)
+          setLaunchStep("")
+          setCountdown(5)
+        }
+      }, 1000)
     } catch (error: any) {
       console.error("Launch failed:", error)
       setLaunchStep(`Launch failed: ${error?.message || 'Unknown error'}`)
-    } finally {
-      setTimeout(() => {
-        setIsLaunching(false)
-        setLaunchProgress(0)
-        setLaunchStep("")
-      }, 3000)
     }
   }
 
@@ -131,6 +140,7 @@ export function TokenLauncher({ walletAddress, isCorrectNetwork }: TokenLauncher
               <p className="font-medium text-green-800">Token Launched Successfully!</p>
               <p className="text-sm text-gray-600">Transaction Hash:</p>
               <code className="text-xs bg-gray-100 p-2 rounded block break-all">{txHash}</code>
+              <p className="text-sm text-gray-600 mt-2">Redirecting in {countdown} seconds...</p>
             </div>
           )}
         </CardContent>
