@@ -29,7 +29,6 @@ interface TokenData {
 }
 
 export function TokenLauncher({ walletAddress, isCorrectNetwork }: TokenLauncherProps) {
-  console.log('isCorrectNetwork', isCorrectNetwork)
   const [tokenData, setTokenData] = useState<TokenData>({
     name: "",
     symbol: "",
@@ -49,7 +48,6 @@ export function TokenLauncher({ walletAddress, isCorrectNetwork }: TokenLauncher
   }
 
   const launchToken = async () => {
-    console.log('launch token')
     setIsLaunching(true)
     setLaunchProgress(0)
 
