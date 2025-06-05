@@ -1,16 +1,123 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TokenLauncher } from "@/components/token-launcher"
 import { BridgeStatus } from "@/components/bridge-status"
 import { WalletConnect } from "@/components/wallet-connect"
 import { TokenHistory } from "@/components/token-history"
+import { ethers } from "ethers"
+
+const NEON_DEVNET = {
+  chainId: '0xe9ac0ce', // 245022926 in hex
+  chainName: 'Neon EVM DevNet',
+  nativeCurrency: {
+    name: 'NEON',
+    symbol: 'NEON',
+    decimals: 18
+  },
+  rpcUrls: ['https://devnet.neonevm.org'],
+  blockExplorerUrls: ['https://devnet.neonscan.org']
+}
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false)
   const [walletAddress, setWalletAddress] = useState("")
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(false)
+  const [networkName, setNetworkName] = useState("")
+
+  const checkAndSwitchNetwork = async () => {
+    if (typeof window.ethereum === "undefined") {
+      alert("Please install MetaMask to use this dApp")
+      return false
+    }
+
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const network = await provider.getNetwork()
+      setNetworkName(network.name)
+      
+      // Check if the chain to connect to is already added
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+      console.log('chainId', chainId)
+      console.log('NEON_DEVNET.chainId', NEON_DEVNET.chainId)
+      console.log('chainId !== NEON_DEVNET.chainId', chainId !== NEON_DEVNET.chainId)
+      
+      if (chainId !== NEON_DEVNET.chainId) {
+        try {
+          // Try to switch to the Neon Devnet
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: NEON_DEVNET.chainId }],
+          })
+        } catch (switchError: any) {
+          // This error code indicates that the chain has not been added to MetaMask
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [NEON_DEVNET],
+              })
+            } catch (addError) {
+              console.error('Failed to add Neon Devnet:', addError)
+              return false
+            }
+          } else {
+            console.error('Failed to switch to Neon Devnet:', switchError)
+            return false
+          }
+        }
+      }
+      setIsCorrectNetwork(true)
+      return true
+    } catch (error) {
+      console.error('Failed to check/switch network:', error)
+      return false
+    }
+  }
+
+  useEffect(() => {
+    const ethereum = window.ethereum
+    if (typeof ethereum !== "undefined") {
+      const handleChainChanged = async (chainId: string) => {
+        console.log('handleChainChanged')
+        if (chainId === NEON_DEVNET.chainId) {
+          setIsCorrectNetwork(true)
+          setNetworkName(NEON_DEVNET.chainName)
+        } else {
+          setIsCorrectNetwork(false)
+          const provider = new ethers.BrowserProvider(ethereum)
+          const network = await provider.getNetwork()
+          setNetworkName(network.name)
+          alert("Please connect to Neon Devnet to use this dApp")
+        }
+      }
+
+      ethereum.on("chainChanged", handleChainChanged)
+
+      // Initial network check if connected
+      if (isConnected) {
+        checkAndSwitchNetwork()
+      }
+
+      // Cleanup listeners on component unmount
+      return () => {
+        ethereum.removeListener("chainChanged", handleChainChanged)
+      }
+    }
+  }, [isConnected])
+
+  const handleConnect = async (connected: boolean) => {
+    setIsConnected(connected)
+    if (connected) {
+      const isCorrectNetwork = await checkAndSwitchNetwork()
+      setIsCorrectNetwork(isCorrectNetwork)
+    } else {
+      setIsCorrectNetwork(false)
+      setNetworkName("")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50">
@@ -29,8 +136,9 @@ export default function Home() {
             <WalletConnect
               isConnected={isConnected}
               walletAddress={walletAddress}
-              onConnect={setIsConnected}
+              onConnect={handleConnect}
               onAddressChange={setWalletAddress}
+              networkName={networkName}
             />
           </div>
 
@@ -43,7 +151,7 @@ export default function Home() {
               </TabsList>
 
               <TabsContent value="launcher">
-                <TokenLauncher walletAddress={walletAddress} />
+                <TokenLauncher walletAddress={walletAddress} isCorrectNetwork={isCorrectNetwork} />
               </TabsContent>
 
               <TabsContent value="bridge">

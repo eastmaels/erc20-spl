@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -11,9 +11,10 @@ interface WalletConnectProps {
   walletAddress: string
   onConnect: (connected: boolean) => void
   onAddressChange: (address: string) => void
+  networkName: string
 }
 
-export function WalletConnect({ isConnected, walletAddress, onConnect, onAddressChange }: WalletConnectProps) {
+export function WalletConnect({ isConnected, walletAddress, onConnect, onAddressChange, networkName }: WalletConnectProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const connectWallet = async () => {
@@ -44,18 +45,6 @@ export function WalletConnect({ isConnected, walletAddress, onConnect, onAddress
     onAddressChange("")
   }
 
-  useEffect(() => {
-    if (typeof window.ethereum !== "undefined") {
-      window.ethereum.on("accountsChanged", (accounts: string[]) => {
-        if (accounts.length === 0) {
-          disconnectWallet()
-        } else {
-          onAddressChange(accounts[0])
-        }
-      })
-    }
-  }, [])
-
   if (isConnected) {
     return (
       <Card>
@@ -71,7 +60,7 @@ export function WalletConnect({ isConnected, walletAddress, onConnect, onAddress
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" className="bg-green-100 text-green-800">
-              Neon EVM
+              {networkName || "Neon EVM"}
             </Badge>
             <Button variant="outline" size="sm" onClick={disconnectWallet}>
               Disconnect

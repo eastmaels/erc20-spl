@@ -16,6 +16,7 @@ import { CONTRACT_ADDRESSES } from "@/constants/contracts"
 
 interface TokenLauncherProps {
   walletAddress: string
+  isCorrectNetwork: boolean
 }
 
 interface TokenData {
@@ -27,7 +28,8 @@ interface TokenData {
   enableBridge: boolean
 }
 
-export function TokenLauncher({ walletAddress }: TokenLauncherProps) {
+export function TokenLauncher({ walletAddress, isCorrectNetwork }: TokenLauncherProps) {
+  console.log('isCorrectNetwork', isCorrectNetwork)
   const [tokenData, setTokenData] = useState<TokenData>({
     name: "",
     symbol: "",
@@ -47,6 +49,7 @@ export function TokenLauncher({ walletAddress }: TokenLauncherProps) {
   }
 
   const launchToken = async () => {
+    console.log('launch token')
     setIsLaunching(true)
     setLaunchProgress(0)
 
@@ -66,8 +69,14 @@ export function TokenLauncher({ walletAddress }: TokenLauncherProps) {
       setLaunchStep("Deploying ERC20 contract...")
       setLaunchProgress(50)
 
-      // Replace with your actual factory contract address
+      // Add logging to debug contract instantiation
+      console.log('Factory contract address:', CONTRACT_ADDRESSES.erc20ToSpl)
+      console.log('Contract ABI:', ERC20_TO_SPL_ABI)
+      
       const factory = new ethers.Contract(CONTRACT_ADDRESSES.erc20ToSpl, ERC20_TO_SPL_ABI, signer)
+      
+      // Log available functions
+      // console.log('Available functions:', Object.keys(factory.functions))
       console.log('tokenData', tokenData)
 
       const tx = await factory.createErc20ForSplMintable(
@@ -257,7 +266,12 @@ export function TokenLauncher({ walletAddress }: TokenLauncherProps) {
             </div>
           </div>
 
-          <Button onClick={launchToken} disabled={!isFormValid} className="w-full" size="lg">
+          <Button 
+            onClick={launchToken} 
+            disabled={!isFormValid || !isCorrectNetwork} 
+            className="w-full" 
+            size="lg"
+          >
             <Rocket className="h-4 w-4 mr-2" />
             Launch Token
             <ArrowRight className="h-4 w-4 ml-2" />
@@ -267,6 +281,13 @@ export function TokenLauncher({ walletAddress }: TokenLauncherProps) {
             <div className="flex items-center space-x-2 text-sm text-amber-600">
               <AlertCircle className="h-4 w-4" />
               <span>Please fill in all required fields</span>
+            </div>
+          )}
+
+          {!isCorrectNetwork && (
+            <div className="flex items-center space-x-2 text-sm text-red-600">
+              <AlertCircle className="h-4 w-4" />
+              <span>Please connect to Neon Devnet to launch tokens</span>
             </div>
           )}
         </CardContent>
