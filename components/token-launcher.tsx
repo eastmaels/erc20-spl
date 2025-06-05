@@ -10,6 +10,8 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Rocket, ArrowRight, CheckCircle, AlertCircle } from "lucide-react"
+import { ethers } from "ethers"
+import { ERC20_TO_SPL_ABI } from "@/constants/abi"
 
 interface TokenLauncherProps {
   walletAddress: string
@@ -48,30 +50,44 @@ export function TokenLauncher({ walletAddress }: TokenLauncherProps) {
     setLaunchProgress(0)
 
     try {
-      // Step 1: Deploy ERC20 Contract
-      setLaunchStep("Deploying ERC20 contract...")
+      // Step 1: Connect to provider and get signer
+      setLaunchStep("Connecting to wallet...")
       setLaunchProgress(25)
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Step 2: Initialize Neon Composability
-      setLaunchStep("Initializing Neon composability contract...")
-      setLaunchProgress(50)
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Step 3: Setup SPL Bridge
-      if (tokenData.enableBridge) {
-        setLaunchStep("Setting up SPL token bridge...")
-        setLaunchProgress(75)
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+      
+      if (!window.ethereum) {
+        throw new Error("Please install MetaMask or another Ethereum wallet")
       }
+
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      
+      // Step 2: Deploy ERC20 Contract
+      setLaunchStep("Deploying ERC20 contract...")
+      setLaunchProgress(50)
+
+      // Replace with your actual factory contract address
+      const factoryAddress = "YOUR_FACTORY_CONTRACT_ADDRESS"
+      const factory = new ethers.Contract(factoryAddress, ERC20_TO_SPL_ABI, signer)
+
+      const tx = await factory.createErc20ForSplMintable(
+        tokenData.name,
+        tokenData.symbol,
+        parseInt(tokenData.decimals),
+        walletAddress // Using the connected wallet as mint authority
+      )
+
+      // Step 3: Wait for transaction
+      setLaunchStep("Waiting for transaction confirmation...")
+      setLaunchProgress(75)
+      const receipt = await tx.wait()
 
       // Step 4: Complete
       setLaunchStep("Token launched successfully!")
       setLaunchProgress(100)
-      setTxHash("0x" + Math.random().toString(16).substr(2, 64))
-    } catch (error) {
+      setTxHash(receipt.hash)
+    } catch (error: any) {
       console.error("Launch failed:", error)
-      setLaunchStep("Launch failed. Please try again.")
+      setLaunchStep(`Launch failed: ${error?.message || 'Unknown error'}`)
     } finally {
       setTimeout(() => {
         setIsLaunching(false)
